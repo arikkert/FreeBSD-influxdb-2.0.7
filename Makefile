@@ -4,13 +4,14 @@
 #
 
 VERSION=v2.0.7
+DISTDIR=influxdb
 
 all: run
 
-influxdb:
-	if [ ! -d influxdb ]; \
+$(DISTDIR):
+	if [ ! -d $(DISTDIR) ]; \
 	then \
-		git clone https://github.com/influxdata/influxdb.git --branch $(VERSION) --single-branch; \
+		git clone https://github.com/influxdata/$(DISTDIR).git --branch $(VERSION) --single-branch; \
 	fi
 
 /usr/local/bin/bash:
@@ -25,13 +26,19 @@ influxdb:
 /usr/local/bin/cargo:
 	sudo pkg install -y rust
 
-build: influxdb /usr/local/bin/gmake /bin/bash /usr/local/bin/cargo
-	cd influxdb; \
+build: $(DISTDIR) /usr/local/bin/gmake /bin/bash /usr/local/bin/cargo
+	cd $(DISTDIR); \
 	gmake
 
-clean:
-	rm -rf influxdb
+distclean:
+	rm -rf $(DISTDIR)
+
+clean: distclean
+
+removedb:
+	rm -rf $(HOME)/.influxdbv2
 
 run: build
-	@echo "URL: http://$$(hostname):8086 version $(VERSION)"
-	influxdb/bin/freebsd/influxd
+	@echo "URL: http://$$(hostname):8086"
+	$(DISTDIR)/bin/freebsd/influxd version
+	$(DISTDIR)/bin/freebsd/influxd
